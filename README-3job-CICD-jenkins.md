@@ -273,16 +273,7 @@ It merges code from the `dev` branch into the `main` branch and pushes the updat
     ![alt text](img/3job-job2-bs.png)
 
 
-job-1 running, triggered by git push to dev branch
 
-![alt text](img/job1-done.png)
-
-job-2 triggred by job-1
-
-![alt text](img/job2-done.png)
-
-
-![alt text](img_fqg/diagram-jenkins-ci.png)
 
 
 
