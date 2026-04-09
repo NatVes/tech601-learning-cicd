@@ -242,12 +242,7 @@ It merges code from the `dev` branch into the `main` branch and pushes the updat
    - Create a new Freestyle project and name it something like: `natalia-job2-ci-merge`
    - **Use Job-1 as a template**
 
-2. In Source Code Management
-    - Branch to build → change to `*/main`
-
-    ![alt text](img/3jobs-job2-scm.png)
-
-3. Build Triggers
+2. Build Triggers
    - Do not add a webhook trigger here
    - Job-2 should be triggered by Job-1, not directly by GitHub
 
@@ -264,6 +259,7 @@ It merges code from the `dev` branch into the `main` branch and pushes the updat
 
     ![alt text](img/3job-job2-be.png)
 
+    
 5. Build Steps
 
     **Add Execute shell and use:**
