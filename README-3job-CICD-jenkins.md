@@ -9,12 +9,15 @@
     - [Benefits Observed](#benefits-observed)
   - [Pre-requisites](#pre-requisites)
     - [Add SSH key to GitHub repository and Jenkins](#add-ssh-key-to-github-repository-and-jenkins)
-    - [Store .pem key in Jenkins](#store-pem-key-in-jenkins)
+    - [Store .pem key in Jenkins to connect to AWS](#store-pem-key-in-jenkins-to-connect-to-aws)
     - [Add GitHub Webhook](#add-github-webhook)
   - [Job-1: CI with GitHub Webhook](#job-1-ci-with-github-webhook)
     - [How to create Job-1](#how-to-create-job-1)
   - [Job-2: CI Merge the code from `dev/` branch to `main/` branch](#job-2-ci-merge-the-code-from-dev-branch-to-main-branch)
     - [How to create Job-2](#how-to-create-job-2)
+    - [💥**Recommended way of merging**💥](#recommended-way-of-merging)
+  - [Job-3: CD deploy to EC2 server](#job-3-cd-deploy-to-ec2-server)
+  - [Results](#results)
 
 
 ## Overview
@@ -139,7 +142,14 @@ cat <your-key>
    git remote add origin git@github.com: ...
    ```
 
-### Store .pem key in Jenkins
+### Store .pem key in Jenkins to connect to AWS
+
+>Jenkins → Credentials → Add Credentials  
+>Type: SSH Username with PRIVATE key 
+
+>Copy your private .pem ssh-key
+
+![alt text](img/credentials-jenkins-ec2.png)
 
 ### Add GitHub Webhook
 
@@ -218,6 +228,8 @@ Open Jenkins dashboard → Click New Item → Enter name: `natalia-job1-ci-test`
 
 8. Save
 
+---
+
 ## Job-2: CI Merge the code from `dev/` branch to `main/` branch
 
 **Job-2** (CI Merge) is triggered automatically by **Job-1** after successful tests.
@@ -272,8 +284,91 @@ It merges code from the `dev` branch into the `main` branch and pushes the updat
 
     ![alt text](img/3job-job2-bs.png)
 
+### 💥**Recommended way of merging**💥
 
+>Use Git Publisher Plagin
 
+**Inside Job-2:**
+
+- In Post-build Actions → Git publisher
+
+![alt text](img/git-publisher.png)
+
+>Don't use shell comands
+
+---
+
+## Job-3: CD deploy to EC2 server
+
+1. Use Job-1 as a template
+   
+2. Things to change
+   
+   1. Source Code Management → Branch to build → change to */main
+   
+   ![alt text](img/3job-j3-b-to-b.png)
+
+   2. Build Triggers → `job-2`
+   
+   ![alt text](img/3job-j3-bt.png)
+
+   3. Build Environment → SSH Agent → choose `.pem key`
+   
+   ![alt text](img/3job-j3-be.png)
+
+   4. Build Steps → Execute shell
+
+      ```bash
+      ssh -o StrictHostKeyChecking=no ubuntu@54.76.173.61 "rm -rf /home/ubuntu/app"
+      scp -o StrictHostKeyChecking=no -r app ubuntu@54.76.173.61:/home/ubuntu/
+
+      ssh -o StrictHostKeyChecking=no ubuntu@54.76.173.61 << EOF
+      set -e
+      cd /home/ubuntu/app
+      npm install
+      pm2 delete app || true
+      pm2 start app.js --name app
+      EOF
+      ```
+
+      - SSH connection  
+      `ssh ubuntu@54.78.173.68`
+
+        - Jenkins connects to an EC2 instance:
+          ```
+          user: ubuntu  
+          Public IP: 54.78.173.68
+          ```
+
+      - Change directory  
+      `cd /home/ubuntu/app`
+
+      - Remove old folder before copying new one  
+      `"rm -rf /home/ubuntu/app"`
+
+      - Stop running processes  
+      `pm2 delete app || true`  
+
+        `|| true` prevents failure if nothing is running  
+
+      - Start application
+      `pm2 start app.js --name app`
+
+      - `-o StrictHostKeyChecking=no` is an SSH option that disables host key verification during connection
+
+---
+
+## Results
+
+>CI/CD pipeline triggered by `git push` to the `dev` branch of the app repository
+
+1. First change
+
+![alt text](img/app-1-change.png)
+
+2. Second change
+
+![alt text](img/app-2-change.png)
 
 
 

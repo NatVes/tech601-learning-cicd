@@ -294,19 +294,7 @@ on:
 
 
 
-http://52.31.15.176:8080/  
-username: devopslondon  
-password: DevOpsAdmin
 
-scp -o StrictHostKeyChecking=no -r app ubuntu@108.130.111.154:/home/ubuntu/
-ssh -o StrictHostKeyChecking=no ubuntu@108.130.111.154 << EOF
-sudo rm -rf /tech601-sparta-app/app
-sudo mv /home/ubuntu/app /tech601-sparta-app/
-cd /tech601-sparta-app/app
-npm install
-pm2 delete sparta-app || true
-pm2 start app.js --name sparta-app
-EOF
 
 
 
